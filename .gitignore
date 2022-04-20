@@ -1,0 +1,4 @@
+# Folders
+datasets/*
+env/*
+.pytest_cache/*
