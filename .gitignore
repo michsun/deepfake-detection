@@ -1,4 +1,5 @@
 # Folders
-datasets/
+datasets/*/
 env/
 .pytest_cache/
+.DS_Stores
