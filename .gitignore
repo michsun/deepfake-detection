@@ -174,3 +174,4 @@ cython_debug/
 # Folders
 model/datasets/*
 model/extracted_faces/*
+mode/notebooks/weights/*
