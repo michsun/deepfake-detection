@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<!-- <h1 class="title-font">Detect Something here</h1> -->
+{% endblock %}
+
+{% block body %}
+
+<div class="grid-container">
+    <div class="item2">
+        <h2>Load Video</h2>
+
+    </div>
+    <div class="item3">
+        <h2>Video Player</h2>
+        <video width="70%" controls>
+            <source src="{{ url_for('static', filename='sample-media/zelensky-deepfake.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+        </video>
+    </div>  
+    <div class="item4">
+        <h2>Results</h2>
+        
+    </div>
+</div>
+
+
+
+
+
+<!--
+<div id="detectContainer" class="container border border-danger">
+    <div id="video-container" class="border border-dark">
+        <p>Video Player</p>
+        <video width="70%" controls>
+            <source src="{{ url_for('static', filename='sample-media/zelensky-deepfake.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+        </video>
+    </div>
+    <div id="video-classification">
+        
+        <div id="video-load" class="border border-dark">
+            
+        </div>
+
+        <div id="video-results" class="border border-dark">
+            
+        </div>
+
+    </div>
+</div>
+-->
+{% endblock %}

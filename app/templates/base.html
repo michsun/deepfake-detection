@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Application</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- navbar on top of everything -->
+    
+        <!-- Deepfake Detection -->
+        
+        <!-- Right aligned -->
+    <div class="nav-bar" style="background-color:rgb(0, 0, 0);">
+        <div class="row">
+            <h1 class="col-sm-5 order-sm-2,title-font">Deepfake Detection</h1>
+            <a href="{{ url_for('home') }}" class="col-sm-2 order-sm-2, menu-button"><b>Home</b></a><br>
+            <a href="{{ url_for('aboutus') }}" class="col-sm-2 order-sm-2, menu-button"><b>About Us</b></a><br>
+            <a href="{{ url_for('detect') }}" class="col-sm-2 order-sm-2, menu-button"><b>Detect</b></a><br>
+        </div>
+    </div>
+
+        
+
+    
+    
+    <!-- <p>
+        <table>
+            <tr>
+                <th><a href="{{ url_for('home') }}"><b>Home</b></a><br></th>
+                <th><a href="{{ url_for('aboutus') }}"><b>About Us</b></a><br></th>
+                <th><a href="{{ url_for('detect') }}"><b>Detect</b></a><br></th>
+            </tr>
+        </table>
+    </p> -->
+    {% block body %}{% endblock %}
+</body>
+</html>
