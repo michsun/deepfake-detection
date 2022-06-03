@@ -105,7 +105,7 @@ partd @ file:///opt/conda/conda-bld/partd_1647245470509/work
 pdfrw==0.4
 pexpect @ file:///tmp/build/80754af9/pexpect_1605563209008/work
 pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
-Pillow==8.3.1
+Pillow==9.0.1
 plaidbench==0.7.0
 plaidml==0.7.0
 plaidml-keras==0.7.0
