@@ -2,52 +2,94 @@
 
 {% block head %}
 <!-- <h1 class="title-font">Detect Something here</h1> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{{url_for('static', filename='detect.js')}}"></script> 
 {% endblock %}
 
 {% block body %}
+<div class="main">
+    <div class="grid-container">
 
-<div class="grid-container">
-    <div class="item2">
-        <h2>Load Video</h2>
-
-    </div>
-    <div class="item3">
-        <h2>Video Player</h2>
-        <video width="70%" controls>
-            <source src="{{ url_for('static', filename='sample-media/zelensky-deepfake.mp4') }}" type="video/mp4">
-        Your browser does not support the video tag.
-        </video>
-    </div>  
-    <div class="item4">
-        <h2>Results</h2>
-        
+        <div class="item1">
+            <h2 class="detect-h2">Video Player</h2>
+            <p id="video-title">{{ defaults.video_filename }}</p>
+            <!-- <p id="video-title"></p> -->
+            <video id="video" controls>
+                <source src="{{ url_for('static', filename=defaults.video_static_src) }}" type="video/mp4">
+            Your browser does not support the video tag.
+            </video>
+        </div>  
+    
+        <div class="item2">
+            <h2 class="detect-h2">Load Video</h2>
+            <div class="caption-text">
+                <h3>Select Video</h3>
+                <p style="font-size:18px">Choose a sample video from the sample below or upload your own video.</p>
+            </div>
+            <div>
+                <h5 class="caption-text ">Sample videos</h5>
+                <!---Dropdown Box-->
+                <div class="btn-group">
+                    <button 
+                     type="button" id="dropdown-videos" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sample videos<div class="downArrow">&#9660;</div>
+                    </button>
+                    <ul id="sample-dropdown" class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="dropdownMenuButton1">
+                        {% for filename in sample_files %}
+                            <li><a class="dropdown-item" href="#" onclick="setNewFile(text)">{{ filename }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>   
+            <div class="caption-text">
+                <br>
+                <h5>Upload file</h5>
+                <!--Click to upload button-->
+                <!-- <div class="input-group">
+                    <input id="upload-button" type="file" class="form-control" id="inputGroupFile02">
+                </div> -->
+    
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control file-upload-text" disabled placeholder="select a file..." />
+                    <span class="input-group-btn">
+                        <button id="upload-button" type="button" class="btn file-upload-btn">
+                            Browse...
+                            <input type="file" class="file-upload" name="myFile" />
+                        </button>
+                    </span>
+                </div>
+    
+                <br>
+            </div> 
+    
+            <br>
+            <hr class="style18">
+            <br>
+    
+            <div class="caption-text">
+                
+                <h2 class="detect-h2">Results</h2>
+                <table>
+                    <tr>
+                        <td style="font-style: italic">Deepfake?</td>
+                        <td id="df-prediction">
+                            <!--True/false-->
+                            No prediction
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-style: italic">Avg. Confidence</td>
+                        <td id="df-confidence">
+                            <!--Insert result of confidence-->
+                            0.0
+                        </td>
+                    </tr>     
+                </table>
+            </div>
+        </div>
+    
     </div>
 </div>
 
 
-
-
-
-<!--
-<div id="detectContainer" class="container border border-danger">
-    <div id="video-container" class="border border-dark">
-        <p>Video Player</p>
-        <video width="70%" controls>
-            <source src="{{ url_for('static', filename='sample-media/zelensky-deepfake.mp4') }}" type="video/mp4">
-        Your browser does not support the video tag.
-        </video>
-    </div>
-    <div id="video-classification">
-        
-        <div id="video-load" class="border border-dark">
-            
-        </div>
-
-        <div id="video-results" class="border border-dark">
-            
-        </div>
-
-    </div>
-</div>
--->
 {% endblock %}
