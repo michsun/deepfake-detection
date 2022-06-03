@@ -24,12 +24,12 @@ class DetectorCmap:
     c = ["red", "orange", "yellow", "greenyellow", "limegreen"]
     v = [0, .25, .5, .76 , 1.]
     l = list(zip(v,c))
-    self.cmap = LinearSegmentedColormap.from_list("ryg", l, N=1000)
-    return self.cmap
+    cmap = LinearSegmentedColormap.from_list("ryg", l, N=1000)
+    return cmap
   
   def set_cmap(self, l):
-    self.cmap = LinearSegmentedColormap.from_list("custom", l, N=1000)
-    return self.cmap
+    cmap = LinearSegmentedColormap.from_list("custom", l, N=1000)
+    return cmap
   
   def get_rgb(self, k:float):
     if k < 0 or k > 1:
@@ -70,7 +70,7 @@ class FaceExtractor:
     Detects a face and draws a rectangle on the image.
     """
     if type(img) == str:
-      img = self.open_image(img)
+      img = open_image(img)
     
     # Image size
     img_y = img.shape[0]
@@ -83,7 +83,7 @@ class FaceExtractor:
       elif self.model == "retinaface":
         x, y, w, h = face['box']
       if padding:
-        x, y, w, h = self.add_padding(x,y,w,h, img_x, img_y, padding)
+        x, y, w, h = add_padding(x,y,w,h, img_x, img_y, padding)
       confidence = face['confidence']
       box_colour = self.cmap.get_rgb(confidence)
       # Draws the rectangle on the img
@@ -92,7 +92,7 @@ class FaceExtractor:
   
   def crop_detected_face(self, img: Union[str, np.ndarray], padding:float=0.3) -> List[np.ndarray]:
     if type(img) == str:
-      img = self.open_image(img)
+      img = open_image(img)
     img_y = img.shape[0]
     img_x = img.shape[1]
     cropped_images = []
@@ -101,7 +101,7 @@ class FaceExtractor:
       if face['confidence'] > self.thresh:
         x, y, w, h = face['box']
         if padding:
-          x, y, w, h = self.add_padding(x,y,w,h, img_x, img_y, padding)
+          x, y, w, h = add_padding(x,y,w,h, img_x, img_y, padding)
         cropped_images.append(img[y:y+h, x:x+h])
     return cropped_images
   
@@ -111,7 +111,7 @@ class FaceExtractor:
     confidence level, and the confidence level, that is above the threshold.
     """
     if type(img) == str:
-      img = self.open_image(img)
+      img = open_image(img)
     
     img_y = img.shape[0]
     img_x = img.shape[1]
@@ -124,12 +124,12 @@ class FaceExtractor:
         best_confidence = face['confidence']
         x, y, w, h = face['box']
         if padding:
-          x, y, w, h = self.add_padding(x,y,w,h, img_x, img_y, padding)
+          x, y, w, h = add_padding(x,y,w,h, img_x, img_y, padding)
         best_face = img[y:y+h, x:x+h]
         
     return best_face, best_confidence
   
-  def detect_faces(self, img: np.ndarray) -> List:
+  def detect_faces(self, img: np.ndarray, sort_confidence: bool =True) -> List:
     faces = []
     results = self.detector.detect_faces(img)
     for res in results:
@@ -149,37 +149,39 @@ class FaceExtractor:
         'box': box,
         'confidence': confidence
       })
+    if sort_confidence:
+        faces = sorted(faces, key=lambda x:x['confidence'], reverse=True)
     return faces
 
-  def add_padding(self, x:int, y:int, w:int, h:int, xlim: int, ylim: int, 
-                  amount:float=0.3) -> tuple:
-    """
-    Returns the dimensions after a padding amount has been added.
-    Defaults to add 30% padding.
-    """
-    # Adds paddding
-    new_w = int(w * (1 + amount)) 
-    new_h = int(h * (1 + amount))      
-    new_x = x - int( (new_w - w)/2 )
-    new_y = y - int( (new_h - h)/2 )
-    # Check limits
-    if new_w > xlim:
-      new_w = xlim
-      new_x = 0
-    if new_h > ylim:
-      new_h = ylim
-      new_y = 0
-    if new_x < 0:
-      new_x = 0
-    if new_y < 0:
-      new_y = 0
-    return new_x, new_y, new_w, new_h
-  
-  def open_image(self, image_path: str) -> np.ndarray:
-    img = cv2.imread(image_path)
-    if img is None:
-      raise FileNotFoundError(f"{image_path} not found.")
-    return img
+def add_padding(x:int, y:int, w:int, h:int, xlim: int, ylim: int, 
+                amount:float=0.3) -> tuple:
+  """
+  Returns the dimensions after a padding amount has been added.
+  Defaults to add 30% padding.
+  """
+  # Adds paddding
+  new_w = int(w * (1 + amount)) 
+  new_h = int(h * (1 + amount))      
+  new_x = x - int( (new_w - w)/2 )
+  new_y = y - int( (new_h - h)/2 )
+  # Check limits
+  if new_w > xlim:
+    new_w = xlim
+    new_x = 0
+  if new_h > ylim:
+    new_h = ylim
+    new_y = 0
+  if new_x < 0:
+    new_x = 0
+  if new_y < 0:
+    new_y = 0
+  return new_x, new_y, new_w, new_h
+
+def open_image(image_path: str) -> np.ndarray:
+  img = cv2.imread(image_path)
+  if img is None:
+    raise FileNotFoundError(f"{image_path} not found.")
+  return img
 
 
 class FrameExtractor:
