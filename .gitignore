@@ -172,6 +172,7 @@ cython_debug/
 .DS_Store
 
 # Folders
+app/static/media/*
 model/datasets/*
 model/extracted_faces/*
 mode/notebooks/weights/*
