@@ -1,7 +1,8 @@
 import os
 import json
 
-SAMPLE_VIDEO_DIR = "app/static/media/sample-original/"
+# Locations of the sample videos
+SAMPLE_VIDEO_DIR = "app/static/media/sample-original/Youtube"
 SAMPLE_DETECTED_DIR = "app/static/media/detected/"
 
 def get_sample_video_paths():

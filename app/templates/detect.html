@@ -1,46 +1,77 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<!-- <h1 class="title-font">Detect Something here</h1> -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='detect.css') }}">
+<!-- JS -->
+<script>
+    var sample_results = {{ sample_results|tojson }}
+</script>
 <script src="{{url_for('static', filename='detect.js')}}"></script> 
 {% endblock %}
 
 {% block body %}
-<div class="main">
+<div class="main" style="border:3px solid green;">
     <div class="grid-container">
 
         <div class="item1">
             <h2 class="detect-h2">Video Player</h2>
-            <p id="video-title">{{ defaults.video_filename }}</p>
-            <!-- <p id="video-title"></p> -->
+            <p id="video-title">{{ video_player.filename }}</p>
             <video id="video" controls>
-                <source src="{{ url_for('static', filename=defaults.video_static_src) }}" type="video/mp4">
+                <source src="{{ url_for('static', filename=video_player.src) }}" type="video/mp4">
             Your browser does not support the video tag.
             </video>
+
+            <p>Video details:</p>
         </div>  
     
-        <div class="item2">
+        <div class="item2" style="border:2px solid white;">
+            <h2 class="detect-h2">Deepfake Classification</h2>
+            <div class="caption-text">
+                <p>Results for <span>{{ video_player.filename }}</span> </p>
+                <table>
+                    <tr>
+                        <td style="font-style: italic">Classification</td>
+                        <td id="df-prediction">
+                            <!--True/false-->
+                            Select a video
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-style: italic">Deepfake Confidence</td>
+                        <td id="df-confidence">
+                            <!--Insert result of confidence-->
+                            0.0 %
+                        </td>
+                    </tr>     
+                </table>
+
+                <p>To learn about how the classification works, click <a href="#">here</a>.</p>
+            </div>
+    
+            <br>
+            <hr class="style18">
+            <br>
+
             <h2 class="detect-h2">Load Video</h2>
             <div class="caption-text">
                 <h3>Select Video</h3>
-                <p style="font-size:18px">Choose a sample video from the sample below or upload your own video.</p>
+                <p>Choose a sample video from the sample below or upload your own video.</p>
             </div>
-            <div>
-                <h5 class="caption-text ">Sample videos</h5>
-                <!---Dropdown Box-->
-                <div class="btn-group">
-                    <button 
-                     type="button" id="dropdown-videos" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        Sample videos<div class="downArrow">&#9660;</div>
-                    </button>
-                    <ul id="sample-dropdown" class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="dropdownMenuButton1">
-                        {% for filename in sample_files %}
-                            <li><a class="dropdown-item" href="#" onclick="setNewFile(text)">{{ filename }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>   
+
+            <!---Dropdown Box-->
+            <div class="btn-group shadow-0">
+                <button type="button" class="btn btn-light dropdown-toggle" id="dropdownMenuButton" data-mdb-toggle="dropdown" aria-expanded="false">
+                    Sample videos...
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for filename in sample_files %}
+                        <li><a class="dropdown-item" href="#" onclick="setNewSampleFile(text)">{{ filename }}</a></li>
+                    {% endfor %}
+                    <li><hr class="dropdown-divider" /></li>
+                </ul>
+            </div>
+
             <div class="caption-text">
                 <br>
                 <h5>Upload file</h5>
@@ -48,48 +79,27 @@
                 <!-- <div class="input-group">
                     <input id="upload-button" type="file" class="form-control" id="inputGroupFile02">
                 </div> -->
-    
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control file-upload-text" disabled placeholder="select a file..." />
-                    <span class="input-group-btn">
-                        <button id="upload-button" type="button" class="btn file-upload-btn">
-                            Browse...
-                            <input type="file" class="file-upload" name="myFile" />
-                        </button>
-                    </span>
-                </div>
-    
-                <br>
+                <p>Valid file extensions: .mp4, .avi</p>
             </div> 
+
+            <form class="file-input mb-3" action="/upload" method="post" enctype="multipart/form-data">
+                <input class="form-control mb-3" id="customFile" type="file" accept=".mp4, .avi" name="videoToUpload" />
+                <button class="btn btn-info" id="upload-button" type="submit" name="videoSubmit" >Upload video</button>
+            </form>
+
+            {# Old upload  #}
+            {# <div class="input-group mb-3">
+                <input type="text" class="form-control file-upload-text" disabled placeholder="select a file..." />
+                <span class="input-group-btn">
+                    <button id="upload-button" type="button" class="btn file-upload-btn">
+                        Browse...
+                        <input type="file" class="file-upload" name="myFile" />
+                    </button>
+                </span>
+            </div> #}
     
-            <br>
-            <hr class="style18">
-            <br>
-    
-            <div class="caption-text">
-                
-                <h2 class="detect-h2">Results</h2>
-                <table>
-                    <tr>
-                        <td style="font-style: italic">Deepfake?</td>
-                        <td id="df-prediction">
-                            <!--True/false-->
-                            No prediction
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-style: italic">Avg. Confidence</td>
-                        <td id="df-confidence">
-                            <!--Insert result of confidence-->
-                            0.0
-                        </td>
-                    </tr>     
-                </table>
-            </div>
         </div>
     
     </div>
 </div>
-
-
 {% endblock %}

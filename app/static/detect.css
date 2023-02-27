@@ -1,20 +1,11 @@
-* {
-    margin: 0;
-    padding: 0;
-}
-
-body{
-    background-color: #111111;
-}
-
 .item1{ 
     /* grid-area: video; */
-    display: block;
+    /* display: block; */
     margin-left: auto;
     margin-right: auto;
     /* max-width: 1000px; */
     float:left;
-    width:70%;
+    width:65%;
     /* border: 5px solid green; */
 }
 
@@ -35,9 +26,9 @@ body{
 }
 .item2 { 
     /* grid-area: menu; */
-    float:left;
-    width: 30%;
     display:block;
+    float:left;
+    width: 35%;
 }
 
 @media only screen and (max-width: 620px) {
@@ -63,7 +54,7 @@ body{
 }
 
 .grid-container {
-    width: 90%;
+    width: 95%;
     max-width: 1500px;
     margin-left:auto;
     margin-right:auto;
@@ -90,19 +81,22 @@ body{
     /* background-color:rgb(29, 29, 29); */
     border-radius: 10px;
     padding: 20px 0;
-  }
+}
   
 .caption-text{
     margin-left:10px;
     color:white;
     text-align: left;
-    margin-bottom: 20px;
+    /* margin-bottom: 10px; */
 }
 
+/* RESULTS */
+
 table {
-    border-collapse: collapse;
+    border-collapse : collapse;
     width: 100%;
 }
+
 td {
     border: 15px;
     text-align: left;
@@ -110,55 +104,54 @@ td {
     font-size: 18px;
 }
 
+/* DROPDOWN - SAMPLE VIDEOS */
 
-.nav-bar{
-    display: block;
-    width: 100%;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-
-    position: fixed; /* Set the navbar to fixed position */
-    top: 0; /* Position the navbar at the top of the page */
-    width: 100%; /* Full width */
-    z-index:100;
-    background-color:rgba(20,20,20,0.9);
-}
-.nav-bar > .row > a{
-    color:white;
-    border-style: solid;
-    border-radius: 15px;
-    border-width: thin;
-    border-color: rgb(37, 37, 37);
-    padding:10px;
-    transition: width 1s;
-}
-.downArrow { 
-    display: block;  
-    position: absolute;
-    top: 12px;
-    right: 2px;  
-    color:white;
-}
-.nav-bar > .row > a:hover{
-    color:rgb(249, 255, 189);
-    background-color: rgb(45, 45, 45);
-    text-decoration: none;
-    width: 400px;
-}
 .btn-group{
-    width:100%
+    width:100%;
 }
-.btn-group > .dropdown-toggle {
-    color:black;
-    background-color: white;
-    white-space: nowrap;
-    text-align: left;
+#dropdownMenuButton{
+    position: relative;
+    width: 100%;
     margin-left: 10px;
-    
+    margin-right: 10px;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+.dropdown-toggle:after{
+    position: absolute;
+    top: 16px;
+    right: 9px;
+}
+.dropdown-menu{
+    min-width:96%;
+    max-height: 300px;
+    overflow: scroll;
 }
 
+/* UPLOAD BUTTON */
+
+.file-input{
+    width:100%;
+    align-items: center;
+}
+.form-control{
+    display: block;
+    width: 96%;
+    margin-left:auto;
+    margin-right:auto;
+}
+#upload-button{
+    display: block;
+    width: 250px;
+    max-width: 96%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* TO VET */
 
 #video-title{
     color: white;
@@ -170,18 +163,10 @@ td {
     overflow:hidden;
 }
 
-
-.downArrow{
-    text-align: right;
-}
-
-.btn-group > .dropdown-menu > li {
-    border-collapse: collapse;
-}
 .title-font{
     color:white;
     text-align:left;
-    font-family: Verdana;
+    /* font-family: Verdana; */
 }
 .menu-button{
     text-align:center;
@@ -193,9 +178,6 @@ h2{
     color:white;
     padding-bottom: 8px;
 }
-a:link { text-decoration: none; }
-a:visited { text-decoration: none; }
-a:active { text-decoration: none; }
 
 /* Detect page */
 
@@ -211,27 +193,6 @@ a:active { text-decoration: none; }
     min-height: 97%;
 }
 
-
-#upload-button{
-    background: #2193b0;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #6dd5ed, #2193b0);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #6dd5ed, #2193b0); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    color: #fff;
-    border: 2px solid #eee;
-
-    height:60px;
-    margin-top: auto;
-    margin-bottom: auto;
-}
-/* .form-control{
-    margin-top: auto;
-    margin-bottom: auto;
-    padding:0;
-} */
-
-.dropdown-items{
-    overflow:hidden;
-}
 
 .file-upload {
     position: absolute;
