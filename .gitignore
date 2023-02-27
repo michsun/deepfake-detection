@@ -175,4 +175,7 @@ cython_debug/
 app/static/media/*
 model/datasets/*
 model/extracted_faces/*
-mode/notebooks/weights/*
+model/notebooks/weights/* 
+# test notebook files
+model/notebooks/[test]*.ipynb
+model/notebooks/architectures
