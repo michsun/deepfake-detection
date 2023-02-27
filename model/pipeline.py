@@ -6,28 +6,24 @@ from keras import backend as K
 
 import concurrent.futures
 import cv2
-import json
 import numpy as np
 import os
 import subprocess
 import time
+from pathlib import Path
 from tqdm import tqdm
 
 from extractors import *
 from helpers import *
 
-MODEL_PATH = "model/weights/efficientnetb7-v7-1.hdf5"
+MODEL_PATH = "model/weights/efficientnetb7-full-04.hdf5"
 MODEL_DIM = (256, 256)
-
-OUTPUT_PATH = "app/static/sample-media/"
 
 class Predictor:
     
-    def __init__(self):
+    def __init__(self, true_index:int=1):
         self.model = self._init_model()
-        # self.session = K.get_session()
-        # self.graph = tf.get_default_graph()
-        # self.graph.finalize()
+        self.true_index = true_index
         
     def _init_model(self, verbose=1):
         tic = time.time()
@@ -48,15 +44,17 @@ class Predictor:
     def predict(self, image: np.array):
         # TODO: Image is approapriate (3 channels etc.)
         image = self._preprocessing(image)
-        # with self.session.as_default():
-            # with self.graph.as_default():
         pred = self.model.predict(image)[0][0]
+        if self.true_index == 0:
+            return 1 - pred
         return pred
     
     def worker_predict(self, image: np.array):
         work_model = keras.models.load_model(MODEL_PATH)
         image = self._preprocessing(image)
         pred = work_model.predict(image)[0][0]
+        if self.true_index == 0:
+            return 1 - pred
         return pred
     
 class VideoDeepfakeDetector:
@@ -81,12 +79,13 @@ class VideoDeepfakeDetector:
         # Video out details
         _, filename = os.path.split(video_source)
         filename, _ = os.path.splitext(filename)
-        self.output_path = os.path.join(output_dir, "Detected-"+filename+".mp4")
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        self.output_path = os.path.join(output_dir, filename+".mp4")
         if os.path.isfile(self.output_path):
             os.remove(self.output_path)
         codec = cv2.VideoWriter_fourcc(*'H264') # MJPG, MP4V, H264
         self.output = cv2.VideoWriter(self.output_path, codec, self.fps, (self.frame_width, self.frame_height))
-        self.cmap = DetectorCmap()
+        self.cmap = self._init_cmap()
         self.display_scale = get_display_scale(self.frame_width, self.frame_height)
         if detect_per_second == 0:
             print("Cannot detect 0 frames per second. Setting default detect_per_second=10")
@@ -108,6 +107,12 @@ class VideoDeepfakeDetector:
         results['frames_skipped'] = self.frame_skip
         results['frame_details'] = []
         return results
+    
+    def _init_cmap(self):
+        c = ["limegreen", "royalblue"]
+        v = [0, 1.]
+        l = list(zip(v,c))
+        return DetectorCmap(l)
     
     def run_task_by_task(self, workers=8):
         # Display params
@@ -184,10 +189,11 @@ class VideoDeepfakeDetector:
 
             for face in face_details:
                 x, y, w, h = face['box']
-                box_colour = self.cmap.get_rgb(face['deepfake_prediction'])
+                box_colour = self.cmap.get_bgr(face['deepfake_prediction'])
                 text_colour = (0,0,0)
-                label = "Deepfake:{:.1f}%".format(face['deepfake_prediction']*100)
-
+                label = " conf:{:.2f} ".format(face['deepfake_prediction'])
+                # label = "Deepfake:{:.1f}%".format(face['deepfake_prediction']*100)
+                
                 cv2.rectangle(frame, (x,y), (x+w, y+h), box_colour, box_width)
                 (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_DUPLEX,  font_scale, 1)
                 cv2.rectangle(frame, (x, y ), (x + tw, y+th+int(4*self.display_scale)), box_colour, -1)
@@ -198,13 +204,13 @@ class VideoDeepfakeDetector:
                 'idx': i,
                 'details': face_details
             })
-
+        
         toc = time.time()
         print(f"Complete writing {self.output_path} in {time_delta_str(toc-tic)}.")
         self.results['time'] = toc-tic
         return self.results
         
-    def run_frame_by_frame(self):
+    def run_frame_by_frame(self, sort_by: str = None, face_limit: int = -1, min_area: float = 0.0):
         """
         Predicts whether it is a deepfake on a frame by frame basis.
         """
@@ -224,7 +230,7 @@ class VideoDeepfakeDetector:
                 return
             
             if curr_frame_skip == self.frame_skip:
-                detected_faces = self.face_extractor.detect_faces(frame, sort_confidence=True)
+                detected_faces = self.face_extractor.detect_faces(frame, sort_by=sort_by, face_limit=face_limit, min_area=min_area)
                 face_details = []
                 for face in detected_faces:
                     x, y, w, h = face['box']
@@ -243,9 +249,9 @@ class VideoDeepfakeDetector:
 
             for face in face_details:
                 x, y, w, h = face['box']
-                box_colour = self.cmap.get_rgb(face['deepfake_prediction'])
+                box_colour = self.cmap.get_bgr(face['deepfake_prediction'])
                 text_colour = (0,0,0)
-                label = "Deepfake: {:.1f} %".format(face['deepfake_prediction']*100)
+                label = " conf:{:.2f} ".format(face['deepfake_prediction'])
                 
                 cv2.rectangle(frame, (x,y), (x+w, y+h), box_colour, box_width)
                 (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_DUPLEX,  font_scale, 1)
@@ -275,7 +281,6 @@ class VideoDeepfakeDetector:
             frame = self.results['frame_details'][index]
             if len(frame['details']) > 0:
                 primary_face_predictions.append(frame['details'][0]['deepfake_prediction'])
-        print(primary_face_predictions)
         confidence = sum(primary_face_predictions) / len(primary_face_predictions)
         if confidence > thresh:
             self.results['prediction'] = "FAKE"
@@ -284,10 +289,6 @@ class VideoDeepfakeDetector:
         self.results['prediction_confidence'] = confidence
         return self.results
             
-        
-        
-        
-
 def get_display_scale(frame_width, frame_height):
     max_dim = max(frame_width, frame_height)
     if max_dim >= 3840: # 4k
@@ -299,33 +300,6 @@ def get_display_scale(frame_width, frame_height):
     else:
         return 1
 
-
-SAMPLE_VIDEO_DIR = "app/static/media/sample-original/"
-SAMPLE_DETECTED_DIR = "app/static/media/sample-detected/"
-
-def get_sample_video_paths():
-    filenames = []
-    directory = os.fsencode(SAMPLE_VIDEO_DIR)
-    for file in os.listdir(directory):
-        filename = os.fsdecode(file)
-        filenames.append(filename)
-    filenames = sorted(filenames)
-    return filenames
-
-class NpEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super(NpEncoder, self).default(obj)
-
-def save_json(data, path):
-    with open(path,'w') as fp:
-        json.dump(data, fp, cls=NpEncoder)
-    
 class FFMpegSubprocess:
     
     def __init__(self):
@@ -363,42 +337,35 @@ class FFMpegSubprocess:
         os.remove(temp_output_video)
 
 
-def main(filepaths, outputdir, save_path):    
+def main(video_queue, outputdir, results_path):    
     results = {}
     model = Predictor()
-    for original_file in filepaths:
-        detector = VideoDeepfakeDetector(video_source=original_file,
+    for video_path in video_queue:
+        detector = VideoDeepfakeDetector(video_source=video_path,
                                      model=model,
                                      face_detector="retinaface",
-                                     face_detector_thresh=0.8,
+                                     face_detector_thresh=0.95,
                                      detect_per_second=5,
-                                     output_dir = outputdir
+                                     output_dir=outputdir,
                                      )
-        results[original_file] = detector.run_frame_by_frame()
-    save_json(results, save_path)
+        results[video_path] = detector.run_frame_by_frame(sort_by="conf", face_limit=2, min_area=0.005)
+    save_json(results, results_path)
         
 if __name__ == "__main__":
     n_gpus = len(tf.config.list_physical_devices('GPU'))
     print("Num GPUs Available: ", n_gpus)
     if n_gpus == 0:
-        print("NO GPU SETUP")
-        import sys
-        sys.exit(0)
+        raise Exception("No GPUs available.")
     
-    sample_detected_path = "app/static/media/sample-detected/"
-    json_save_path = "app/static/results.json"
-    queue = [
-        "app/static/media/sample-original/'We will defend ourselves', says Ukrainian president Volodymyr Zelenskiy [ real ].mp4",
-        "app/static/media/sample-original/Bill Hader channels Tom Cruise [DeepFake].mp4",
-        "app/static/media/sample-original/Deepfake Queen- 2020 Alternative Christmas Message.mp4",
-        "app/static/media/sample-original/Deepfake video of Volodymyr Zelensky surrendering surfaces on social media.mp4",
-        "app/static/media/sample-original/Robert Downey Jr and Tom Holland in Back to the future - This is heavy! [ deepfake ].mp4",
-        "app/static/media/sample-original/This is not Morgan Freeman  -  A Deepfake Singularity.mp4",
-        "app/static/media/sample-original/Ukraine president Zelensky says Russia has marked him 'as target No.1' and his family 'No.2' [ real ].mp4",
-        "app/static/media/sample-original/Very realistic Tom Cruise Deepfake | AI Tom Cruise.mp4",
-        "app/static/media/sample-original/You Won’t Believe What Obama Says In This Video!.mp4"
-    ]
-    main(queue, sample_detected_path, json_save_path)
+    # Run sample videos
+    sample_original_path = "app/static/media/sample-original/"
+    sample_detected_path = "app/static/media/sample-detected-2/"
+    sample_queue = iterate_files(sample_original_path)[:2]
+    sample_json_results_path = "app/static/media/sample-results.json"
+    
+    main(video_queue=sample_queue,
+         outputdir=sample_detected_path,
+         results_path=sample_json_results_path)
     
     # ffmpeg = FFMpegSubprocess()
     # audio_source = queue[0]
